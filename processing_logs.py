@@ -5,7 +5,7 @@ from requests.auth import HTTPBasicAuth
 
 load_dotenv()
 # Read values from environment variables
-USERNAME  = os.getenv("SCRAPYD_USERNAME")
+USERNAME = os.getenv("SCRAPYD_USERNAME")
 PASSWORD = os.getenv("SCRAPYD_PASSWORD")
 BASE_URL = os.getenv("SCRAPYD_URL")
 
