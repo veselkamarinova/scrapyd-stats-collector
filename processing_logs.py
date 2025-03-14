@@ -14,4 +14,22 @@ basic = HTTPBasicAuth(USERNAME, PASSWORD)
 url = BASE_URL + "/listjobs.json"
 response = requests.get(url, auth=basic)
 
-
+if response.status_code == 200:
+    data = response.json()
+    logs = []
+    if "finished" in data and len(data["finished"]) > 0:
+        for job in data["finished"]:
+            log_url_info = job.get("log_url")
+            if log_url_info:
+                log_url = BASE_URL + log_url_info
+                log_response = requests.get(log_url, auth=basic)
+                if log_response.status_code == 200:
+                    log_content = log_response.text
+                    log_entry = {
+                        "spider": job.get("spider"),
+                        "id": job.get("id"),
+                        "start_time": job.get("start_time"),
+                        "end_time": job.get("end_time"),
+                        "log_url": log_url,
+                    }
+                    logs.append(log_entry)
