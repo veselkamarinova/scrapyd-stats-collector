@@ -2,6 +2,7 @@ import os
 import requests
 from dotenv import load_dotenv
 from requests.auth import HTTPBasicAuth
+from job_stats import JobStats
 
 load_dotenv()
 # Read values from environment variables
@@ -25,11 +26,11 @@ if response.status_code == 200:
                 log_response = requests.get(log_url, auth=basic)
                 if log_response.status_code == 200:
                     log_content = log_response.text
-                    log_entry = {
-                        "spider": job.get("spider"),
-                        "id": job.get("id"),
-                        "start_time": job.get("start_time"),
-                        "end_time": job.get("end_time"),
-                        "log_url": log_url,
-                    }
-                    logs.append(log_entry)
+                    job_stats = JobStats.create_from_logfile(
+                        job_id=job.get("id"),
+                        spider=job.get("spider"),
+                        start_time=job.get("start_time"),
+                        end_time=job.get("end_time"),
+                        log_content=log_content,
+                    )
+                    logs.append(job_stats)
