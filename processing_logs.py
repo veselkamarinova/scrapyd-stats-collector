@@ -3,8 +3,16 @@ import requests
 from dotenv import load_dotenv
 from requests.auth import HTTPBasicAuth
 from job_stats import JobStats
+from database_handler import DatabaseHandler
 
 load_dotenv()
+
+db_handler = DatabaseHandler()
+db_handler.connect()
+db_handler.create_table("job_stats")
+db_handler.list_databases()
+
+
 # Read values from environment variables
 USERNAME = os.getenv("SCRAPYD_USERNAME")
 PASSWORD = os.getenv("SCRAPYD_PASSWORD")
@@ -20,6 +28,8 @@ if response.status_code == 200:
     logs = []
     if "finished" in data and len(data["finished"]) > 0:
         for job in data["finished"]:
+            if db_handler.has_id(job.get("id")):
+                continue
             log_url_info = job.get("log_url")
             if log_url_info:
                 log_url = BASE_URL + log_url_info
@@ -33,4 +43,6 @@ if response.status_code == 200:
                         end_time=job.get("end_time"),
                         log_content=log_content,
                     )
-                    logs.append(job_stats)
+                    # logs.append(job_stats)
+                    db_handler.insert_job_stats(job_stats)
+db_handler.close()
