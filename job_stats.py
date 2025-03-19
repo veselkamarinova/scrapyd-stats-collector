@@ -40,13 +40,13 @@ class JobStats:
         pattern = re.compile(
             r"('.*?': .*?datetime\.datetime\(\d{4}, \d{1,2}, \d{1,2}, \d{1,2}, \d{1,2}, \d{1,2}, \d{1,6}\)|'.*?': '.*?'|'.*?': \d+|'.*?': \d+\.\d+)"
         )
-        matchess = pattern.findall(dict_string)
+        matches = pattern.findall(dict_string)
 
         # Initialize an empty dictionary
         result_dict = {}
 
         # Process each key-value pair
-        for match in matchess:
+        for match in matches:
             key, value = match.split(": ", 1)
             # Convert key to string and value to appropriate type
             key = key.strip("'")
