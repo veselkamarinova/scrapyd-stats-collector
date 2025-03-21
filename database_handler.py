@@ -91,7 +91,7 @@ class DatabaseHandler:
             try:
                 self.cursor.execute(insert_query, data)
                 self.cnx.commit()
-                print("Data inserted successfully.")
+                print(f"Stored data for spider %s on %s" % (data[1], data[2]))
             except mysql.connector.Error as err:
                 print(f"Failed inserting data: {err}")
         else:

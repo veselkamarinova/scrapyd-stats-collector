@@ -25,7 +25,6 @@ response = requests.get(url, auth=basic)
 
 if response.status_code == 200:
     data = response.json()
-    logs = []
     if "finished" in data and len(data["finished"]) > 0:
         for job in data["finished"]:
             if db_handler.has_id(job.get("id")):
@@ -43,6 +42,5 @@ if response.status_code == 200:
                         end_time=job.get("end_time"),
                         log_content=log_content,
                     )
-                    # logs.append(job_stats)
                     db_handler.insert_job_stats(job_stats)
 db_handler.close()
