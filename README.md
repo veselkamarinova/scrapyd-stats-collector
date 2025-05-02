@@ -47,38 +47,41 @@ To automatically format the code:
 $ black .
 ```
 
-1. Ensure your MySQL server is running and accessible with the credentials provided in the `.venv` file.
+#### Ensure your MySQL server is running and accessible with the credentials provided in the `.venv` file.
 
-2. Run the `processing_logs.py` script to fetch job logs, process them, and store the statistics in the database:
+#### Run the `processing_logs.py` script to fetch job logs, process them, and store the statistics in the database:
     ```sh
     python processing_logs.py
     ```
 
-3. Configure Grafana to visualize the data from the MySQL database.
- 3.1. Install Grafana
- 3.2. Add MySQL Data Source
-  - Open Grafana in your web browser (default is http://localhost:3000).
-  - Log in with the default credentials (username: `admin`, password: `admin`).
-  - Click on the gear icon on the left sidebar to open the Configuration page.
-  - Click on `Data Sources` and then `Add data source`.
-  - Select `MySQL` from the list of data sources.
-  - Enter the MySQL connection details (host, database, user, password).
-  - Click `Save & Test` to verify the connection.
- 3.3. Create a Dashboard
-  - Click on the `+` icon on the left sidebar to create a new dashboard.
-  - Add a new panel to the dashboard.
-  - Select the data source you created earlier.
-  - Write a query to fetch the data you want to visualize.
-  - Choose the type of visualization (e.g., Graph, Table).
-  - Configure the visualization with the desired query and settings.
-  - Click `Save` to save the panel.
+##### Configure Grafana to visualize the data from the MySQL database.
 
-4. Set up Grafana alerts to send notifications to Telegram using the provided bot token and chat ID.
-    - Click on the bell icon (🔔) in the left sidebar to go to the Alerting menu.
-    - Create alert rules. Define the alert conditions. For example, you can set an alert if the number of errors exceeds a certain threshold.
-    - Add a notification channel. Select `Telegram` as the notification channel type.
-    - Enter the name, bot token and chat ID.
-    - Click `Send Test` to verify the connection.
+##### Install Grafana
+
+##### Add MySQL Data Source
+-  Open Grafana in your web browser (default is http://localhost:3000).
+-  Log in with the default credentials (username: `admin`, password: `admin`).
+-  Click on the gear icon on the left sidebar to open the Configuration page.
+-  Click on `Data Sources` and then `Add data source`.
+-  Select `MySQL` from the list of data sources.
+-  Enter the MySQL connection details (host, database, user, password).
+-  Click `Save & Test` to verify the connection.
+
+##### Create a Dashboard
+-  Click on the `+` icon on the left sidebar to create a new dashboard.
+-  Add a new panel to the dashboard.
+-  Select the data source you created earlier.
+-  Write a query to fetch the data you want to visualize.
+-  Choose the type of visualization (e.g., Graph, Table).
+-  Configure the visualization with the desired query and settings.
+-  Click `Save` to save the panel.
+
+##### Set up Grafana alerts to send notifications to Telegram using the provided bot token and chat ID.
+-  Click on the bell icon (🔔) in the left sidebar to go to the Alerting menu.
+-  Create alert rules. Define the alert conditions. For example, you can set an alert if the number of errors exceeds a certain threshold.
+#####  Add a notification channel. Select `Telegram` as the notification channel type.
+##### Enter the name, bot token and chat ID.
+#####  Click `Send Test` to verify the connection.
 
 ## License
 
