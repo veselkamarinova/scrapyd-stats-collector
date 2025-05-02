@@ -15,56 +15,26 @@ This project is designed to process job logs from a Scrapy server, extract relev
 
 1. Clone the repository:
     ```sh
-    git clone <repository_url>
-    cd <repository_directory>
+    git clone https://github.com/veselkamarinova/scrapyd-stats-collector.git
+    cd scrapyd-stats-collector
+    ```
+2. Set up a virtual environment (optional but recommended):
+    ```sh
+    python -m venv env
+    source .venv/bin/activate  
     ```
 
-2. Install the required Python packages:
+3. Install the required Python packages:
     ```sh
     pip install -r requirements.txt
     ```
 
-3. Copy the `.env.dist` file to `.env` and update it with your configuration:
+4. Copy the `.env.dist` file to `.env` and update it with your configuration:
     ```sh
     cp .env.dist .env
     ```
 
-4. Update the `.env` file with your MySQL, Scrapy server, Grafana, and Telegram credentials:
-    ```dotenv
-    SCRAPYD_USERNAME=my_username
-    SCRAPYD_PASSWORD=my_secret_password
-    SCRAPYD_URL=https://mysite.com
-    DB_USER=my_db_user
-    DB_PASSWORD=my_db_password
-    DB_HOST=localhost
-    DB_PORT=3306
-    DB_NAME=my_database
-    GRAFANA_URL=http://localhost:3000
-    ```
 
-## Obtaining Telegram Bot Token and Chat ID
-
-1. **Create a Telegram Bot**:
-    - Open Telegram and search for `@BotFather`.
-    - Start a chat with `@BotFather` and use the `/newbot` command to create a new bot.
-    - Follow the instructions to set a name and username for your bot.
-    - `@BotFather` will provide you with a bot token. This is your `TELEGRAM_BOT_TOKEN`.
-
-2. **Get Your Chat ID**:
-    - Start a chat with your bot by searching for its username in Telegram and sending a message.
-    - Open the following URL in your browser, replacing `YOUR_BOT_TOKEN` with your actual bot token:
-      ```
-      https://api.telegram.org/botYOUR_BOT_TOKEN/getUpdates
-      ```
-    - Look for the `chat` object in the response. The `id` field in this object is your `TELEGRAM_CHAT_ID`.
-
-## Usage
-
-```shell
-# Create a virtual environment and activate it.
-$ python -m venv env
-$ source env/bin/activate
-```
 
 ### Code style
 
@@ -77,7 +47,7 @@ To automatically format the code:
 $ black .
 ```
 
-1. Ensure your MySQL server is running and accessible with the credentials provided in the `.env` file.
+1. Ensure your MySQL server is running and accessible with the credentials provided in the `.venv` file.
 
 2. Run the `processing_logs.py` script to fetch job logs, process them, and store the statistics in the database:
     ```sh
@@ -110,29 +80,6 @@ $ black .
     - Enter the name, bot token and chat ID.
     - Click `Send Test` to verify the connection.
 
-## Classes and Functions
-
-### `processing_logs.py`
-
-- Fetches job logs from the Scrapy server.
-- Processes the logs to extract job statistics.
-- Stores the statistics in the MySQL database.
-
-### `job_stats.py`
-
-- `JobStats`: Class to parse and store job statistics.
-  - `create_from_logfile(job_id, spider, start_time, end_time, log_content)`: Static method to create a `JobStats` object from log content.
-
-### `database_handler.py`
-
-- `DatabaseHandler`: Class to manage the MySQL database connection and operations.
-  - `connect()`: Connects to the MySQL database.
-  - `create_table(table_name)`: Creates a table if it does not exist.
-  - `has_id(job_id)`: Checks if a job ID exists in the database.
-  - `insert_job_stats(job_stats)`: Inserts job statistics into the database.
-  - `list_databases()`: Lists all databases.
-  - `close()`: Closes the database connection.
-
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the GPL License. See the `LICENSE` file for details.
