@@ -20,7 +20,7 @@ This project is designed to process job logs from a Scrapy server, extract relev
     ```
 2. Set up a virtual environment (optional but recommended):
     ```sh
-    python -m venv env
+    python -m venv .venv
     source .venv/bin/activate  
     ```
 
