@@ -82,7 +82,3 @@ $ black .
 #####  Add a notification channel. Select `Telegram` as the notification channel type.
 ##### Enter the name, bot token and chat ID.
 #####  Click `Send Test` to verify the connection.
-
-## License
-
-This project is licensed under the GPL License. See the `LICENSE` file for details.
