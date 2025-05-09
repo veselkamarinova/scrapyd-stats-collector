@@ -117,19 +117,6 @@ class DatabaseHandler:
         )
         self.insert_data(insert_query, data)
 
-    def list_databases(self):
-        if self.cursor:
-            try:
-                self.cursor.execute("SHOW DATABASES")
-                databases = self.cursor.fetchall()
-                print("Databases:")
-                for db in databases:
-                    print(db[0])
-            except mysql.connector.Error as err:
-                print(f"Failed to list databases: {err}")
-        else:
-            print("No database connection.")
-
     def close(self):
         if self.cursor:
             self.cursor.close()
