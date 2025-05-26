@@ -41,5 +41,6 @@ if response.status_code == 200:
                         end_time=job.get("end_time"),
                         log_content=log_content,
                     )
-                    db_handler.insert_job_stats(job_stats)
+                    if job_stats:
+                        db_handler.insert_job_stats(job_stats)
 db_handler.close()

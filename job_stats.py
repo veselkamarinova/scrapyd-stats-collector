@@ -35,6 +35,9 @@ class JobStats:
         # Example regex to extract some information from the log content
         regex_pattern = r"\[scrapy\.statscollectors].*\n({.*})"
         matches = re.findall(regex_pattern, log_content, re.DOTALL | re.MULTILINE)
+        # If there are no matches, the job was interrupted. Skip it.
+        if not matches:
+            return None
         # Remove curly braces and match key-value pairs
         dict_string = matches[0].strip("{}")
         pattern = re.compile(
