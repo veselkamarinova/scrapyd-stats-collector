@@ -98,4 +98,4 @@ class JobStats:
         )
 
     def __str__(self):
-        return f"Job ID: {self.id}, Spider: {self.spider}, Start Time: {self.start_time}, End Time: {self.end_time}, Log URL: {self.log_url}"
+        return f"Job ID: {self.job_id}, Spider: {self.spider}, Start Time: {self.start_time}, End Time: {self.end_time}"
