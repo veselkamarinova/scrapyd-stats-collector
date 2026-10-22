@@ -1,5 +1,6 @@
 import mysql.connector
 import os
+import sys
 from mysql.connector import errorcode
 
 
@@ -80,8 +81,8 @@ class DatabaseHandler:
                 result = self.cursor.fetchone()
                 return result is not None
             except mysql.connector.Error as err:
-                print(f"Failed checking job ID: {err}")
-                return False
+                print(f"Failed checking job ID {job_id}: {err}", file=sys.stderr)
+                raise
         else:
             print("No database connection.")
             return False
@@ -93,7 +94,8 @@ class DatabaseHandler:
                 self.cnx.commit()
                 print(f"Stored data for spider %s on %s" % (data[1], data[2]))
             except mysql.connector.Error as err:
-                print(f"Failed inserting data: {err}")
+                print(f"Failed inserting data for job ID {data[0]}: {err}", file=sys.stderr)
+                raise
         else:
             print("No database connection.")
 

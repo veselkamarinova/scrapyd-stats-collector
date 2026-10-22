@@ -1,4 +1,6 @@
 import os
+import sys
+import mysql.connector
 import requests
 from dotenv import load_dotenv
 from requests.auth import HTTPBasicAuth
@@ -21,12 +23,17 @@ BASE_URL = os.getenv("SCRAPYD_URL")
 basic = HTTPBasicAuth(USERNAME, PASSWORD)
 url = BASE_URL + "/listjobs.json"
 response = requests.get(url, auth=basic)
+failures = 0
 
 if response.status_code == 200:
     data = response.json()
     if "finished" in data and len(data["finished"]) > 0:
         for job in data["finished"]:
-            if db_handler.has_id(job.get("id")):
+            try:
+                if db_handler.has_id(job.get("id")):
+                    continue
+            except mysql.connector.Error:
+                failures += 1
                 continue
             log_url_info = job.get("log_url")
             if log_url_info:
@@ -42,5 +49,22 @@ if response.status_code == 200:
                         log_content=log_content,
                     )
                     if job_stats:
-                        db_handler.insert_job_stats(job_stats)
+                        try:
+                            db_handler.insert_job_stats(job_stats)
+                        except mysql.connector.Error:
+                            failures += 1
+                else:
+                    print(
+                        f"Failed fetching log for job ID {job.get('id')} from {log_url}: "
+                        f"HTTP {log_response.status_code}",
+                        file=sys.stderr,
+                    )
+                    failures += 1
+else:
+    print(f"Failed fetching {url}: HTTP {response.status_code}", file=sys.stderr)
+    failures += 1
 db_handler.close()
+
+if failures:
+    print(f"{failures} failure(s) during collection.", file=sys.stderr)
+    sys.exit(1)
