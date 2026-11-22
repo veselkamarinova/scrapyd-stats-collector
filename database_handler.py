@@ -106,6 +106,22 @@ class DatabaseHandler:
             print("No database connection.")
             return False
 
+    def has_rows(self):
+        if self.cursor:
+            try:
+                self.cursor.execute(f"SELECT 1 FROM {TABLE_NAME} LIMIT 1")
+                result = self.cursor.fetchone()
+                return result is not None
+            except mysql.connector.Error as err:
+                print(
+                    f"Failed checking whether {TABLE_NAME} has rows: {err}",
+                    file=sys.stderr,
+                )
+                raise
+        else:
+            print("No database connection.")
+            return False
+
     def insert_data(self, insert_query, data):
         if self.cursor:
             try:
