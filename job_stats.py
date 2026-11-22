@@ -56,8 +56,8 @@ class JobStats:
         error_count = (
             result_dict["log_count/ERROR"] if "log_count/ERROR" in result_dict else 0
         )
-        max_mem = result_dict["memusage/max"]
-        status = result_dict["finish_reason"]
+        max_mem = result_dict.get("memusage/max")
+        status = result_dict.get("finish_reason")
 
         return JobStats(
             job_id,
