@@ -57,24 +57,8 @@ class JobStats:
                 r"Crawled \d+ pages \(at [^)]*\), scraped (\d+) items", log_content
             )
             scraped_count = int(logstats[-1]) if logstats else None
-            return JobStats(
-                job_id,
-                project,
-                spider,
-                start_time,
-                end_time,
-                scraped_count,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
+            return JobStats.create_without_stats(
+                job_id, project, spider, start_time, end_time, scraped_count
             )
 
         scraped_count = (
@@ -137,6 +121,33 @@ class JobStats:
             status_429_count,
             critical_count,
             result_dict,
+        )
+
+    @staticmethod
+    def create_without_stats(
+        job_id, project, spider, start_time, end_time, scraped_count
+    ):
+        # A job whose log has no stats dump, or whose log is not available:
+        # the counters and the stats are unknown. The item count is known only
+        # from the periodic LogStats lines of a log.
+        return JobStats(
+            job_id,
+            project,
+            spider,
+            start_time,
+            end_time,
+            scraped_count,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         )
 
     @staticmethod
