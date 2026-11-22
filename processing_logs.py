@@ -11,7 +11,7 @@ load_dotenv()
 
 db_handler = DatabaseHandler()
 db_handler.connect()
-db_handler.create_table("job_stats")
+db_handler.create_table()
 
 
 # Read values from environment variables
