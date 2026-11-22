@@ -47,7 +47,7 @@ To automatically format the code:
 $ black .
 ```
 
-#### Ensure your MySQL server is running and accessible with the credentials provided in the `.venv` file.
+#### Ensure your MySQL server is running and accessible with the credentials provided in the `.env` file.
 
 #### Run the `processing_logs.py` script to fetch job logs, process them, and store the statistics in the database:
     ```sh
