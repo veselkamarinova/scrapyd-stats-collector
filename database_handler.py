@@ -3,6 +3,8 @@ import os
 import sys
 from mysql.connector import errorcode
 
+TABLE_NAME = "job_stats"
+
 
 class DatabaseHandler:
     def __init__(self):
@@ -43,10 +45,10 @@ class DatabaseHandler:
             print("No database connection.")
             return False
 
-    def create_table(self, table_name):
-        if not self.table_exists(table_name):
+    def create_table(self):
+        if not self.table_exists(TABLE_NAME):
             create_table_query = (
-                "CREATE TABLE job_stats ("
+                f"CREATE TABLE {TABLE_NAME} ("
                 "    job_id CHAR(32),"
                 "    spider VARCHAR(255),"
                 "    start_time DATETIME,"
@@ -70,13 +72,13 @@ class DatabaseHandler:
                 print("No database connection.")
                 raise Exception("No database connection.")
         else:
-            print(f"Table {table_name} already exists.")
+            print(f"Table {TABLE_NAME} already exists.")
 
     def has_id(self, job_id):
         if self.cursor:
             try:
                 self.cursor.execute(
-                    "SELECT job_id FROM job_stats WHERE job_id = %s", (job_id,)
+                    f"SELECT job_id FROM {TABLE_NAME} WHERE job_id = %s", (job_id,)
                 )
                 result = self.cursor.fetchone()
                 return result is not None
@@ -94,14 +96,17 @@ class DatabaseHandler:
                 self.cnx.commit()
                 print(f"Stored data for spider %s on %s" % (data[1], data[2]))
             except mysql.connector.Error as err:
-                print(f"Failed inserting data for job ID {data[0]}: {err}", file=sys.stderr)
+                print(
+                    f"Failed inserting data for job ID {data[0]}: {err}",
+                    file=sys.stderr,
+                )
                 raise
         else:
             print("No database connection.")
 
     def insert_job_stats(self, job_stats):
         insert_query = (
-            "INSERT INTO job_stats "
+            f"INSERT INTO {TABLE_NAME} "
             "(job_id, spider, start_time, end_time, number_scraped, dropped, warnings, errors, max_mem, finish_reason) "
             "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
         )
