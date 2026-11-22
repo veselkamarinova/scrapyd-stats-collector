@@ -9,6 +9,7 @@ class JobStats:
     def __init__(
         self,
         job_id,
+        project,
         spider,
         start_time,
         end_time,
@@ -18,8 +19,15 @@ class JobStats:
         error_count,
         max_mem,
         status,
+        response_count,
+        retry_count,
+        status_403_count,
+        status_429_count,
+        critical_count,
+        stats,
     ):
         self.job_id = job_id
+        self.project = project
         self.spider = spider
         self.start_time = start_time
         self.end_time = end_time
@@ -29,9 +37,15 @@ class JobStats:
         self.error_count = error_count
         self.max_mem = max_mem
         self.status = status
+        self.response_count = response_count
+        self.retry_count = retry_count
+        self.status_403_count = status_403_count
+        self.status_429_count = status_429_count
+        self.critical_count = critical_count
+        self.stats = stats
 
     @staticmethod
-    def create_from_logfile(job_id, spider, start_time, end_time, log_content):
+    def create_from_logfile(job_id, project, spider, start_time, end_time, log_content):
 
         result_dict = JobStats.parse_stats_dump(log_content)
         # If there is no stats dump, the job was interrupted before the spider
@@ -45,10 +59,17 @@ class JobStats:
             scraped_count = int(logstats[-1]) if logstats else None
             return JobStats(
                 job_id,
+                project,
                 spider,
                 start_time,
                 end_time,
                 scraped_count,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
                 None,
                 None,
                 None,
@@ -76,9 +97,31 @@ class JobStats:
         )
         max_mem = result_dict.get("memusage/max")
         status = result_dict.get("finish_reason")
+        response_count = (
+            result_dict["response_received_count"]
+            if "response_received_count" in result_dict
+            else 0
+        )
+        retry_count = result_dict["retry/count"] if "retry/count" in result_dict else 0
+        status_403_count = (
+            result_dict["downloader/response_status_count/403"]
+            if "downloader/response_status_count/403" in result_dict
+            else 0
+        )
+        status_429_count = (
+            result_dict["downloader/response_status_count/429"]
+            if "downloader/response_status_count/429" in result_dict
+            else 0
+        )
+        critical_count = (
+            result_dict["log_count/CRITICAL"]
+            if "log_count/CRITICAL" in result_dict
+            else 0
+        )
 
         return JobStats(
             job_id,
+            project,
             spider,
             start_time,
             end_time,
@@ -88,6 +131,12 @@ class JobStats:
             error_count,
             max_mem,
             status,
+            response_count,
+            retry_count,
+            status_403_count,
+            status_429_count,
+            critical_count,
+            result_dict,
         )
 
     @staticmethod

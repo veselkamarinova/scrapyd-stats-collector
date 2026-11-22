@@ -63,13 +63,15 @@ elif response.status_code == 200:
                     log_content = log_response.text
                     job_stats = JobStats.create_from_logfile(
                         job_id=job.get("id"),
+                        project=job.get("project"),
                         spider=job.get("spider"),
                         start_time=job.get("start_time"),
                         end_time=job.get("end_time"),
                         log_content=log_content,
                     )
                     try:
-                        db_handler.insert_job_stats(job_stats)
+                        if not db_handler.insert_job_stats(job_stats):
+                            failures += 1
                     except mysql.connector.Error:
                         failures += 1
                 else:

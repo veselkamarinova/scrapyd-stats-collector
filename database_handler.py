@@ -1,9 +1,17 @@
+import datetime
+import json
 import mysql.connector
 import os
 import sys
 from mysql.connector import errorcode
 
 TABLE_NAME = "job_stats"
+
+
+def serialize_datetime(value):
+    if isinstance(value, datetime.datetime):
+        return value.isoformat()
+    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
 
 
 class DatabaseHandler:
@@ -50,6 +58,7 @@ class DatabaseHandler:
             create_table_query = (
                 f"CREATE TABLE {TABLE_NAME} ("
                 "    job_id CHAR(32),"
+                "    project VARCHAR(255),"
                 "    spider VARCHAR(255),"
                 "    start_time DATETIME,"
                 "    end_time DATETIME,"
@@ -59,8 +68,14 @@ class DatabaseHandler:
                 "    errors INT UNSIGNED,"
                 "    max_mem BIGINT,"
                 "    finish_reason VARCHAR(255),"
+                "    responses INT UNSIGNED,"
+                "    retries INT UNSIGNED,"
+                "    status_403 INT UNSIGNED,"
+                "    status_429 INT UNSIGNED,"
+                "    criticals INT UNSIGNED,"
+                "    stats JSON,"
                 "    PRIMARY KEY (job_id),"
-                "    INDEX spider_end_time (spider, end_time)"
+                "    INDEX project_spider_end_time (project, spider, end_time)"
                 ");"
             )
             if self.cursor:
@@ -96,7 +111,7 @@ class DatabaseHandler:
             try:
                 self.cursor.execute(insert_query, data)
                 self.cnx.commit()
-                print(f"Stored data for spider %s on %s" % (data[1], data[2]))
+                print(f"Stored data for spider %s on %s" % (data[2], data[3]))
             except mysql.connector.Error as err:
                 if err.errno == errorcode.ER_DUP_ENTRY:
                     print(f"Job ID {data[0]} is already stored.")
@@ -112,11 +127,32 @@ class DatabaseHandler:
     def insert_job_stats(self, job_stats):
         insert_query = (
             f"INSERT INTO {TABLE_NAME} "
-            "(job_id, spider, start_time, end_time, number_scraped, dropped, warnings, errors, max_mem, finish_reason) "
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+            "(job_id, project, spider, start_time, end_time, number_scraped, dropped, warnings, errors, max_mem, finish_reason, "
+            "responses, retries, status_403, status_429, criticals, stats) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
         )
+        # A job without a stats dump is stored with stats NULL, not the JSON
+        # value null.
+        stats = None
+        serialized = True
+        if job_stats.stats is not None:
+            try:
+                stats = json.dumps(
+                    job_stats.stats, default=serialize_datetime, allow_nan=False
+                )
+            except (TypeError, ValueError) as err:
+                # The parser keeps values that JSON cannot hold, such as sets,
+                # bytes, infinite floats and tuple keys of nested dicts. Store
+                # the job without its stats rather than stop the run, and
+                # report the failure to the caller.
+                print(
+                    f"Failed serializing stats for job ID {job_stats.job_id}: {err}",
+                    file=sys.stderr,
+                )
+                serialized = False
         data = (
             job_stats.job_id,
+            job_stats.project,
             job_stats.spider,
             job_stats.start_time,
             job_stats.end_time,
@@ -126,8 +162,15 @@ class DatabaseHandler:
             job_stats.error_count,
             job_stats.max_mem,
             job_stats.status,
+            job_stats.response_count,
+            job_stats.retry_count,
+            job_stats.status_403_count,
+            job_stats.status_429_count,
+            job_stats.critical_count,
+            stats,
         )
         self.insert_data(insert_query, data)
+        return serialized
 
     def close(self):
         if self.cursor:
