@@ -58,7 +58,9 @@ class DatabaseHandler:
                 "    warnings INT UNSIGNED,"
                 "    errors INT UNSIGNED,"
                 "    max_mem BIGINT,"
-                "    finish_reason VARCHAR(255)"
+                "    finish_reason VARCHAR(255),"
+                "    PRIMARY KEY (job_id),"
+                "    INDEX spider_end_time (spider, end_time)"
                 ");"
             )
             if self.cursor:
@@ -96,6 +98,9 @@ class DatabaseHandler:
                 self.cnx.commit()
                 print(f"Stored data for spider %s on %s" % (data[1], data[2]))
             except mysql.connector.Error as err:
+                if err.errno == errorcode.ER_DUP_ENTRY:
+                    print(f"Job ID {data[0]} is already stored.")
+                    return
                 print(
                     f"Failed inserting data for job ID {data[0]}: {err}",
                     file=sys.stderr,
