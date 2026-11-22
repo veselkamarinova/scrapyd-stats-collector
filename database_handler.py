@@ -147,8 +147,8 @@ class DatabaseHandler:
             "responses, retries, status_403, status_429, criticals, stats) "
             "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
         )
-        # A job without a stats dump is stored with stats NULL, not the JSON
-        # value null.
+        # A job without a stats dump or without a log is stored with stats
+        # NULL, not the JSON value null.
         stats = None
         serialized = True
         if job_stats.stats is not None:

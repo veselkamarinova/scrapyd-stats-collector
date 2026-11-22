@@ -101,6 +101,32 @@ elif response.status_code == 200:
                         file=sys.stderr,
                     )
                     failures += 1
+            else:
+                # scrapyd gives a null log_url when logs_dir is disabled or
+                # the log file does not exist: it keeps the logs of only the
+                # last jobs_to_keep jobs of a spider. Store the job from the
+                # listjobs.json fields with the stats unknown, and count a
+                # failure, since its stats are lost. The next run finds the
+                # row and skips the job.
+                print(
+                    f"Log of job ID {job.get('id')} was not available: "
+                    "storing the job without stats.",
+                    file=sys.stderr,
+                )
+                failures += 1
+                job_stats = JobStats.create_without_stats(
+                    job_id=job.get("id"),
+                    project=job.get("project"),
+                    spider=job.get("spider"),
+                    start_time=job.get("start_time"),
+                    end_time=job.get("end_time"),
+                    scraped_count=None,
+                )
+                try:
+                    if not db_handler.insert_job_stats(job_stats):
+                        failures += 1
+                except mysql.connector.Error:
+                    failures += 1
 else:
     print(f"Failed fetching {url}: HTTP {response.status_code}", file=sys.stderr)
     failures += 1
