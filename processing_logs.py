@@ -68,11 +68,10 @@ elif response.status_code == 200:
                         end_time=job.get("end_time"),
                         log_content=log_content,
                     )
-                    if job_stats:
-                        try:
-                            db_handler.insert_job_stats(job_stats)
-                        except mysql.connector.Error:
-                            failures += 1
+                    try:
+                        db_handler.insert_job_stats(job_stats)
+                    except mysql.connector.Error:
+                        failures += 1
                 else:
                     print(
                         f"Failed fetching log for job ID {job.get('id')} from {log_url}: "

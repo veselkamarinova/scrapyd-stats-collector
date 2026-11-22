@@ -34,9 +34,27 @@ class JobStats:
     def create_from_logfile(job_id, spider, start_time, end_time, log_content):
 
         result_dict = JobStats.parse_stats_dump(log_content)
-        # If there is no stats dump, the job was interrupted. Skip it.
+        # If there is no stats dump, the job was interrupted before the spider
+        # closed, for example by SIGKILL. A dump that does not parse is
+        # handled the same way. Store the job with the counters unknown,
+        # except the item count of the last periodic LogStats line.
         if result_dict is None:
-            return None
+            logstats = re.findall(
+                r"Crawled \d+ pages \(at [^)]*\), scraped (\d+) items", log_content
+            )
+            scraped_count = int(logstats[-1]) if logstats else None
+            return JobStats(
+                job_id,
+                spider,
+                start_time,
+                end_time,
+                scraped_count,
+                None,
+                None,
+                None,
+                None,
+                None,
+            )
 
         scraped_count = (
             result_dict["item_scraped_count"]
