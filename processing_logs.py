@@ -19,13 +19,23 @@ USERNAME = os.getenv("SCRAPYD_USERNAME")
 PASSWORD = os.getenv("SCRAPYD_PASSWORD")
 BASE_URL = os.getenv("SCRAPYD_URL")
 
+# Seconds to wait for a connection and for a response from scrapyd.
+REQUEST_TIMEOUT = (10, 60)
+
 
 basic = HTTPBasicAuth(USERNAME, PASSWORD)
 url = BASE_URL + "/listjobs.json"
-response = requests.get(url, auth=basic)
 failures = 0
+try:
+    response = requests.get(url, auth=basic, timeout=REQUEST_TIMEOUT)
+except requests.RequestException as e:
+    print(f"Failed fetching {url}: {e}", file=sys.stderr)
+    failures += 1
+    response = None
 
-if response.status_code == 200:
+if response is None:
+    pass
+elif response.status_code == 200:
     data = response.json()
     if "finished" in data and len(data["finished"]) > 0:
         for job in data["finished"]:
@@ -38,7 +48,17 @@ if response.status_code == 200:
             log_url_info = job.get("log_url")
             if log_url_info:
                 log_url = BASE_URL + log_url_info
-                log_response = requests.get(log_url, auth=basic)
+                try:
+                    log_response = requests.get(
+                        log_url, auth=basic, timeout=REQUEST_TIMEOUT
+                    )
+                except requests.RequestException as e:
+                    print(
+                        f"Failed fetching log for job ID {job.get('id')} from {log_url}: {e}",
+                        file=sys.stderr,
+                    )
+                    failures += 1
+                    continue
                 if log_response.status_code == 200:
                     log_content = log_response.text
                     job_stats = JobStats.create_from_logfile(
