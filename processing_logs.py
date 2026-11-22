@@ -38,6 +38,26 @@ if response is None:
 elif response.status_code == 200:
     data = response.json()
     if "finished" in data and len(data["finished"]) > 0:
+        # scrapyd keeps only the last finished_to_keep finished jobs and, with
+        # the default MemoryJobStorage, empties the list when it restarts.
+        # When the table has rows but the oldest listed job is not stored,
+        # jobs that finished before it may have dropped out of the list since
+        # the last run. Check before the loop, which stores that job. scrapyd
+        # gives end_time as the str() of a naive local datetime,
+        # "YYYY-MM-DD HH:MM:SS[.ffffff]", which sorts by local wall-clock
+        # time: out of order during the hour the clocks go back.
+        oldest_job = min(data["finished"], key=lambda job: job.get("end_time"))
+        try:
+            if db_handler.has_rows() and not db_handler.has_id(oldest_job.get("id")):
+                print(
+                    f"Oldest finished job ID {oldest_job.get('id')} (end time "
+                    f"{oldest_job.get('end_time')}) is not stored: jobs that "
+                    "finished before it may have been lost.",
+                    file=sys.stderr,
+                )
+                failures += 1
+        except mysql.connector.Error:
+            failures += 1
         for job in data["finished"]:
             try:
                 if db_handler.has_id(job.get("id")):
