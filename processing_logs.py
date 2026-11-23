@@ -11,7 +11,9 @@ load_dotenv()
 
 db_handler = DatabaseHandler()
 db_handler.connect()
-db_handler.create_table()
+if not db_handler.prepare_table():
+    db_handler.close()
+    sys.exit(1)
 
 
 # Read values from environment variables
