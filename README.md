@@ -49,6 +49,38 @@ $ black .
 
 #### Ensure your MySQL server is running and accessible with the credentials provided in the `.env` file.
 
+The database user needs the SELECT, INSERT, CREATE, ALTER and INDEX
+privileges on the database:
+
+```sql
+GRANT SELECT, INSERT, CREATE, ALTER, INDEX ON <database>.* TO '<user>'@'<host>';
+```
+
+The collector creates the `job_stats` table on its first run. When the table
+was created by an earlier version of the collector, it upgrades the table to
+the current schema at the start of the run and records the schema version in
+the `schema_version` table. The upgrade stops with exit status 1, without
+changing the table, while the table holds rows that the new schema does not
+allow: negative counts, a job ID that is stored more than once, or a row
+without a job ID; the error message names the job IDs, or the number of
+rows without one. It also stops, without changing the table, when the
+columns and indexes of the table match no schema version of the collector,
+for example after a column or index was added or changed by hand, or match
+an earlier version than the one recorded in `schema_version`; the error
+message names the version and how the table differs from it. It stops in
+the same way when `schema_version` records a later version than the
+collector knows, for example after a rollback to an earlier commit of the
+collector; this check comes first, so a missing `job_stats` table is not
+created then.
+
+The upgrade does not check the storage engine or row format of the table.
+On a table with a key length limit lower than InnoDB's default, such as a
+MyISAM table or one with `ROW_FORMAT=COMPACT`, the step that adds the
+index on spider and end time fails with exit status 1 after the earlier
+step was applied and recorded. Convert the table, for example with
+`ALTER TABLE job_stats ENGINE=InnoDB ROW_FORMAT=DYNAMIC`, and the next run
+continues from the recorded version.
+
 #### Run the `processing_logs.py` script to fetch job logs, process them, and store the statistics in the database:
     ```sh
     python processing_logs.py
